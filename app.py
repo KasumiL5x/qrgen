@@ -11,33 +11,34 @@ FMT_ASCII = 'ascii'
 FMT_SVG = 'svg'
 FMT_PNG = 'png'
 
+# URL args.
+TXT_ARG = 'txt'
+FMT_ARG = 'fmt'
+
 @app.route('/')
 def index():
-    TXT_ARG = 'txt'
-    FMT_ARG = 'fmt'
-
     # Get text.
-    if TXT_ARG not in request.args:
-        return json_msg(f"Error: Missing argument '{TXT_ARG}'."), 400
-    txt = request.args[TXT_ARG]
+    txt = get_url_arg(request, TXT_ARG)
+    if txt is None:
+        return jsonify(error=f"Error: Missing argument '{TXT_ARG}'."), 400
     # Verify text.
     if not len(txt):
-        return json_msg(f'Error: Text cannot be empty.'), 400
+        return jsonify(error=f'Error: Text cannot be empty.'), 400
 
     # Get format.
-    if FMT_ARG not in request.args:
-        return json_msg(f"Error: Missing argument '{FMT_ARG}'."), 400
-    fmt = request.args[FMT_ARG]
+    fmt = get_url_arg(request, FMT_ARG)
+    if fmt is None:
+        return jsonify(error=f"Error: Missing argument '{FMT_ARG}'."), 400
     # Verify format.
     FMT_OPTS = [FMT_ASCII, FMT_SVG, FMT_PNG]
     if fmt not in FMT_OPTS:
-        return json_msg(f'Error: Invalid format. Valid types are: {FMT_OPTS}.'), 400
+        available_opts = ', '.join(FMT_OPTS)
+        return jsonify(error=f'Error: Invalid format. Valid types are: {available_opts}.'), 400
 
-    qr = make_qr(txt, fmt)
-    return qr
+    return make_qr(txt, fmt)
 
-def json_msg(msg):
-    return jsonify(message=msg)
+def get_url_arg(request, name):
+    return None if name not in request.args else request.args[name]
 
 def make_qr(txt, fmt):
     qr = qrcode.QRCode()
@@ -45,7 +46,6 @@ def make_qr(txt, fmt):
     qr.make(fit=True)
 
     if fmt == FMT_ASCII:
-        # Make a custom output stream cast into a string as the func requires it!
         sio = StringIO()
         qr.print_ascii(out=sio)
         return jsonify(image=sio.getvalue())
@@ -54,19 +54,18 @@ def make_qr(txt, fmt):
         img = qr.make_image(image_factory=qrcode.image.svg.SvgImage)
         buff = BytesIO()
         img.save(buff)
-        as_bytes = base64.b64encode(buff.getvalue())
-        img_str = bytes("data:image/svg+xml;base64,", encoding='utf-8') + as_bytes
+        img_str = bytes("data:image/svg+xml;base64,", encoding='utf-8') + base64.b64encode(buff.getvalue())
         return jsonify(image=img_str.decode('utf-8'))
 
     if fmt == FMT_PNG:
         img = qr.make_image()
         buff = BytesIO()
         img.save(buff, format='png')
-        as_bytes = base64.b64encode(buff.getvalue())
-        img_str = bytes("data:image/jpeg;base64,", encoding='utf-8') + as_bytes
+        img_str = bytes("data:image/jpeg;base64,", encoding='utf-8') + base64.b64encode(buff.getvalue())
         return jsonify(image=img_str.decode('utf-8'))
 
-    return jsonify(msg='Done!') 
+    # This should never happen as the type is checked elsewhere, but just in case it changes.
+    return jsonify(error='Error: Unrecognized format.'), 400
 
 if __name__ == '__main__':
     app.run()

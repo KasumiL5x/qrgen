@@ -88,5 +88,5 @@ def make_qr(txt, fmt, err):
   # This should never happen as the type is checked elsewhere, but just in case it changes.
   return jsonify(error='Error: Unrecognized format.'), 400
 
-if __name__ == '__main__':
-  app.run()
+#if __name__ == '__main__':
+#  app.run()

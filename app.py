@@ -14,6 +14,16 @@ FMT_PNG = 'png'
 # URL args.
 TXT_ARG = 'txt'
 FMT_ARG = 'fmt'
+ERR_ARG = 'err'
+
+# Error correction levels.
+ERROR_MAP = {
+  'L': qrcode.constants.ERROR_CORRECT_L,
+  'M': qrcode.constants.ERROR_CORRECT_M,
+  'Q': qrcode.constants.ERROR_CORRECT_Q,
+  'H': qrcode.constants.ERROR_CORRECT_H
+}
+DEFAULT_ERROR = 'M' # Matches the qrcode package's default.
 
 @app.route('/')
 def index():
@@ -35,13 +45,24 @@ def index():
     available_opts = ', '.join(FMT_OPTS)
     return jsonify(error=f'Error: Invalid format. Valid types are: {available_opts}.'), 400
 
-  return make_qr(txt, fmt)
+  # Get error.
+  err = get_url_arg(request, ERR_ARG)
+  if err is None:
+    err = DEFAULT_ERROR # Parameter is optional so don't return an error.
+  # Verify error.
+  if err not in ERROR_MAP.keys():
+    available_opts = ', '.join(list(ERROR_MAP.keys()))
+    return jsonify(error=f'Error: Invalid error correction type. Valid types are: {available_opts}.'), 400
+
+  return make_qr(txt, fmt, err)
 
 def get_url_arg(request, name):
   return None if name not in request.args else request.args[name]
 
-def make_qr(txt, fmt):
-  qr = qrcode.QRCode()
+def make_qr(txt, fmt, err):
+  qr = qrcode.QRCode(
+    error_correction = ERROR_MAP[err]
+  )
   qr.add_data(txt)
   qr.make(fit=True)
 

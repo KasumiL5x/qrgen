@@ -3,6 +3,9 @@
 
 This was a silly idea I hacked together quickly.  It's surprisingly functional.  The idea is to generate QR codes on demand using a HTTP GET query with URL variables.
 
+## Why?
+Good question.
+
 ## Deployment
 This project is built with `Flask`.  Host the `app.py` just as you would any normal Flask app.  If you're new to Flask deployment, [look here](https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment).
 

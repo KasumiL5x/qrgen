@@ -1,0 +1,6 @@
+Variables:
+	txt:String What the QR code should say.
+	fmt:String What format to return ("ascii", "svg", "png"). Base-64 encoded except for ascii.
+	err:String What level of error correction (L/M/Q/H).
+
+http://qr.dgreen.me?txt=TextToShow&fmt=ascii&err=M

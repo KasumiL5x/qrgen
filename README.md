@@ -11,6 +11,8 @@ This project is built with `Flask`.  Host the `app.py` just as you would any nor
 
 Alternatively to run this on localhost, uncomment the code block in `app.py` surrounding `app.run()` and then run `python app.py` in your terminal.
 
+It may or may not be live at [https://dgreen.me/py/qrgen](https://dgreen.me/py/qrgen).
+
 ## Usage
 Three variables are currently supported by adding them to the URL:
 
